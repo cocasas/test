@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>재현샘 - 지식의 정원</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@300;400;500&display=swap');
+
+        :root { 
+            --primary: #1a2a3a; 
+            --accent: #c0392b; 
+            --bg: #f8f9fa; 
+            --white: #ffffff; 
+            --text-main: #2c3e50;
+            --text-sub: #8e959c;
+            --border: #e9ecef;
+        }
+
+        body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); margin: 0; color: var(--text-main); line-height: 1.6; }
+
+        /* 네비게이션 */
+        .top-nav { padding: 25px 50px; display: flex; justify-content: flex-end; align-items: center; position: absolute; top: 0; width: 100%; box-sizing: border-box; z-index: 10; }
+        .nav-btn { padding: 8px 24px; border: 1px solid var(--primary); background: transparent; cursor: pointer; border-radius: 2px; font-size: 13px; transition: 0.3s; }
+        .nav-btn:hover { background: var(--primary); color: white; }
+        .nav-btn.active { background: var(--primary); color: white; }
+
+        /* 헤더 */
+        header { height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-bottom: 1px solid var(--border); }
+        .logo-wrapper { width: 70px; height: 70px; margin-bottom: 20px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .logo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .logo-wrapper svg { width: 35px; stroke: white; }
+        header h1 { font-family: 'Noto Serif KR', serif; font-size: 2.5rem; margin: 0; letter-spacing: 4px; }
+        header p { font-size: 11px; color: var(--text-sub); letter-spacing: 5px; margin-top: 10px; text-transform: uppercase; }
+
+        /* 인트로 섹션 */
+        #login-guide { 
+            max-width: 900px; 
+            margin: 50px auto; 
+            padding: 80px 40px; 
+            text-align: center; 
+            background: white; 
+            border-radius: 8px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+            animation: fadeIn 1s ease-out;
+            display: none;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .intro-img { 
+            width: 100%; 
+            max-width: 600px; 
+            height: 350px; 
+            margin: 30px auto; 
+            background-size: cover;
+            background-position: center;
+            border-radius: 4px;
+            filter: grayscale(20%);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .intro-title { font-family: 'Noto Serif KR', serif; font-size: 2.2rem; color: var(--primary); margin-bottom: 20px; }
+        .intro-desc { font-size: 16px; color: var(--text-sub); line-height: 1.8; max-width: 650px; margin: 0 auto 40px; white-space: pre-wrap; }
+        
+        /* 메인 콘텐츠 */
+        #main-content { max-width: 1100px; margin: 0 auto; padding: 60px 20px; display: none; }
+
+        /* 관리자 패널 확장 */
+        .admin-panel { background: #fff; padding: 25px; border: 1px solid #000; margin-bottom: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .admin-col { display: flex; flex-direction: column; }
+        .admin-title { font-size: 12px; font-weight: bold; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+        .admin-input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        .admin-input-group label { font-size: 11px; color: #666; }
+        .user-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+
+        /* 카테고리/게시물 스타일은 동일 유지 */
+        .category-nav { display: flex; justify-content: center; gap: 25px; margin-bottom: 40px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .cat-item { cursor: pointer; font-size: 14px; color: var(--text-sub); transition: 0.3s; position: relative; }
+        .cat-item.active { color: var(--primary); font-weight: 700; }
+        .cat-item.active::after { content: ''; position: absolute; bottom: -17px; left: 0; width: 100%; height: 2px; background: var(--primary); }
+        #upload-zone { background: white; padding: 35px; border: 1px solid var(--border); margin-bottom: 40px; }
+        input, textarea, select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border); outline: none; box-sizing: border-box; font-family: inherit; }
+        .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; }
+        .book-card { cursor: pointer; background: white; border: 1px solid var(--border); transition: 0.3s; }
+        .book-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .book-thumb { height: 320px; background: #eee; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; }
+        .book-info { padding: 20px; text-align: center; }
+        .book-info h4 { margin: 0 0 10px 0; font-family: 'Noto Serif KR'; font-size: 16px; }
+        .list-container { background: white; border-top: 2px solid var(--primary); }
+        .list-item { padding: 18px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; width: 90%; max-width: 600px; padding: 40px; max-height: 85vh; overflow-y: auto; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <span id="user-info" style="margin-right: 20px; font-size: 12px;"></span>
+        <button class="nav-btn" id="btn-login-open" onclick="openModal('auth-modal')">LOGIN</button>
+        <button class="nav-btn hidden" id="btn-logout" onclick="handleLogout()">LOGOUT</button>
+    </nav>
+
+    <header>
+        <div class="logo-wrapper" id="logo-display">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 2v20M5 12h14M12 12l4-4M12 12l-4-4M12 22l4-4M12 22l-4-4"/></svg>
+        </div>
+        <h1>재현샘</h1>
+        <p>Archive of Wisdom</p>
+    </header>
+
+    <section id="login-guide">
+        <h2 class="intro-title" id="display-intro-title"></h2>
+        <div class="intro-img" id="display-intro-img"></div>
+        <p class="intro-desc" id="display-intro-desc"></p>
+        <button class="nav-btn active" onclick="openModal('auth-modal')" style="padding: 15px 40px; font-size: 16px;">지금 입장하기</button>
+    </section>
+
+    <main id="main-content">
+        <section id="admin-panel" class="admin-panel hidden">
+            <div class="admin-col">
+                <div class="admin-title">🖼️ 사이트 기본 관리</div>
+                <div class="admin-input-group">
+                    <label>상단 로고 변경</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="file" id="logo-input" accept="image/*" style="font-size: 11px; margin:0;">
+                        <button class="nav-btn" onclick="updateLogo()" style="padding: 4px 10px; font-size: 11px; flex-shrink:0;">변경</button>
+                    </div>
+                </div>
+                <div class="admin-title" style="margin-top:15px;">📝 인트로 화면 관리</div>
+                <div class="admin-input-group">
+                    <label>메인 제목</label>
+                    <input type="text" id="input-intro-title" placeholder="제목을 입력하세요">
+                    <label>상세 설명</label>
+                    <textarea id="input-intro-desc" rows="3" placeholder="설명 문구를 입력하세요" style="font-size:12px;"></textarea>
+                    <label>배경 이미지</label>
+                    <input type="file" id="input-intro-img" accept="image/*" style="font-size: 11px;">
+                    <button class="nav-btn active" onclick="updateIntro()" style="width:100%; margin-top:5px;">인트로 정보 저장</button>
+                </div>
+            </div>
+            <div class="admin-col">
+                <div class="admin-title">👥 회원 관리</div>
+                <table class="user-table"><tbody id="user-list-items"></tbody></table>
+            </div>
+        </section>
+
+        <div class="category-nav">
+            <div class="cat-item active" id="default-tab" onclick="setCategory('전체', this)">전체</div>
+            <div class="cat-item" onclick="setCategory('논문', this)">논문</div>
+            <div class="cat-item" onclick="setCategory('역사', this)">역사</div>
+            <div class="cat-item" onclick="setCategory('소설', this)">소설</div>
+            <div class="cat-item" onclick="setCategory('기타서적', this)">기타</div>
+            <div class="cat-item" onclick="setCategory('자료실', this)">자료실</div>
+        </div>
+
+        <section id="upload-zone" class="hidden">
+            <input type="text" id="reg-title" placeholder="제목">
+            <textarea id="reg-content" placeholder="내용을 입력하세요" rows="4"></textarea>
+            <div style="display: flex; gap: 10px;">
+                <input type="file" id="reg-file" accept="image/*" style="font-size: 12px;">
+                <button class="nav-btn active" onclick="handleRegister()">등록</button>
+            </div>
+        </section>
+
+        <div id="book-display"></div>
+    </main>
+
+    <div id="detail-modal" class="modal">
+        <div class="modal-content">
+            <div id="view-mode">
+                <img id="detail-image" src="" style="max-width:100%; display:block; margin:0 auto 20px;">
+                <h2 id="detail-title" style="font-family: 'Noto Serif KR'; text-align: center;"></h2>
+                <p id="detail-meta" style="color:var(--accent); font-size:12px; text-align: center;"></p>
+                <div id="detail-body" style="white-space: pre-wrap; margin: 20px 0; line-height: 1.8;"></div>
+                <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+                    <button class="nav-btn" onclick="closeModal('detail-modal')">닫기</button>
+                    <div id="admin-tools" class="hidden" style="display: flex; gap: 10px;">
+                        <button class="nav-btn" onclick="toggleEditMode(true)">수정</button>
+                        <button class="nav-btn" style="color: red; border-color: #ffcccc;" onclick="deletePost()">삭제</button>
+                    </div>
+                </div>
+            </div>
+            <div id="edit-mode" class="hidden">
+                <h2 style="font-family: 'Noto Serif KR';">게시물 수정</h2>
+                <input type="text" id="edit-title">
+                <textarea id="edit-content" rows="10"></textarea>
+                <input type="file" id="edit-file" accept="image/*">
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="nav-btn active" onclick="saveEdit()">저장</button>
+                    <button class="nav-btn" onclick="toggleEditMode(false)">취소</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="modal">
+        <div class="modal-content" style="max-width: 350px; text-align: center;">
+            <h2 style="font-family: 'Noto Serif KR'; letter-spacing: 2px;">LOGIN</h2>
+            <input type="text" id="login-id" placeholder="ID" onkeypress="checkEnter(event)">
+            <input type="password" id="login-pw" placeholder="PW" onkeypress="checkEnter(event)">
+            <button class="nav-btn active" style="width:100%; padding: 12px;" onclick="handleLogin()">ENTER</button>
+            <p style="font-size:11px; margin-top:15px">계정이 없으신가요? <span onclick="handleSignup()" style="text-decoration:underline; cursor:pointer">회원가입</span></p>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_ID = "admin";
+        const ADMIN_PW = "014101";
+
+        // 초기 인트로 기본값
+        const defaultIntro = {
+            title: "지식의 정원에 오신 것을 환영합니다",
+            desc: "이곳은 재현샘이 정성껏 가꾼 지식의 아카이브입니다.\n역사, 논문, 그리고 삶의 지혜가 담긴 소설까지...\n깊이 있는 통찰을 통해 세상을 보는 눈을 넓혀보세요.",
+            img: "https://images.unsplash.com/photo-1491841573634-28140fc7ced7?auto=format&fit=crop&w=1200&q=80"
+        };
+
+        let members = JSON.parse(localStorage.getItem('jh_members')) || [];
+        let currentUser = null;
+        let activeCategory = '전체';
+        let selectedPostId = null;
+
+        window.onload = function() {
+            loadLogo();
+            loadIntro();
+            
+            const savedUser = localStorage.getItem('jh_current_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                loginSuccess();
+            } else {
+                document.getElementById('login-guide').style.display = 'block';
+            }
+        };
+
+        // 로고 불러오기
+        function loadLogo() {
+            const logo = localStorage.getItem('jh_site_logo');
+            if(logo) {
+                document.getElementById('logo-display').innerHTML = `<img src="${logo}" style="width:100%; height:100%; object-fit:cover;">`;
+            }
+        }
+
+        // [핵심] 인트로 로드 기능
+        function loadIntro() {
+            const savedIntro = JSON.parse(localStorage.getItem('jh_site_intro')) || defaultIntro;
+            document.getElementById('display-intro-title').innerText = savedIntro.title;
+            document.getElementById('display-intro-desc').innerText = savedIntro.desc;
+            document.getElementById('display-intro-img').style.backgroundImage = `url('${savedIntro.img}')`;
+            
+            // 관리자일 경우 입력창에도 미리 채워줌
+            if(currentUser && currentUser.role === 'admin') {
+                document.getElementById('input-intro-title').value = savedIntro.title;
+                document.getElementById('input-intro-desc').value = savedIntro.desc;
+            }
+        }
+
+        // [핵심] 인트로 수정 기능
+        function updateIntro() {
+            const title = document.getElementById('input-intro-title').value;
+            const desc = document.getElementById('input-intro-desc').value;
+            const fileInput = document.getElementById('input-intro-img');
+            const savedIntro = JSON.parse(localStorage.getItem('jh_site_intro')) || defaultIntro;
+
+            const saveProcess = (imgData) => {
+                const newIntro = {
+                    title: title || defaultIntro.title,
+                    desc: desc || defaultIntro.desc,
+                    img: imgData || savedIntro.img
+                };
+                localStorage.setItem('jh_site_intro', JSON.stringify(newIntro));
+                alert("인트로 정보가 성공적으로 저장되었습니다.");
+                loadIntro(); // 화면 즉시 갱신
+            };
+
+            if(fileInput.files[0]) {
+                const r = new FileReader();
+                r.onload = (e) => saveProcess(e.target.result);
+                r.readAsDataURL(fileInput.files[0]);
+            } else {
+                saveProcess(null);
+            }
+        }
+
+        function handleLogin() {
+            const id = document.getElementById('login-id').value;
+            const pw = document.getElementById('login-pw').value;
+            if(id === ADMIN_ID && pw === ADMIN_PW) {
+                currentUser = { id: ADMIN_ID, role: 'admin' };
+            } else {
+                const user = members.find(m => m.id === id && m.pw === pw);
+                if(user) currentUser = { id: user.id, role: 'user' };
+                else return alert("회원 정보를 확인하세요.");
+            }
+            localStorage.setItem('jh_current_user', JSON.stringify(currentUser));
+            loginSuccess();
+            closeModal('auth-modal');
+        }
+
+        function loginSuccess() {
+            document.getElementById('login-guide').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('btn-login-open').classList.add('hidden');
+            document.getElementById('btn-logout').classList.remove('hidden');
+            document.getElementById('user-info').innerText = currentUser.id.toUpperCase();
+            if(currentUser.role === 'admin') {
+                document.getElementById('admin-panel').classList.remove('hidden');
+                loadIntro(); // 입력 필드 채우기 위해 다시 호출
+                refreshUserList();
+            }
+            setCategory('전체', document.getElementById('default-tab'));
+        }
+
+        function handleLogout() { localStorage.removeItem('jh_current_user'); location.reload(); }
+
+        function updateLogo() {
+            const f = document.getElementById('logo-input').files[0];
+            if(f) { 
+                const r = new FileReader(); 
+                r.onload = (e) => { 
+                    localStorage.setItem('jh_site_logo', e.target.result); 
+                    loadLogo();
+                    alert("로고가 변경되었습니다.");
+                }; 
+                r.readAsDataURL(f); 
+            }
+        }
+
+        // --- 이하 게시물 관리/회원 관리 로직 (이전과 동일) ---
+        function setCategory(genre, el) {
+            activeCategory = genre;
+            document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            const uz = document.getElementById('upload-zone');
+            if(currentUser.role === 'admin' || genre === '자료실') uz.classList.remove('hidden');
+            else uz.classList.add('hidden');
+            renderPosts();
+        }
+
+        function renderPosts() {
+            const container = document.getElementById('book-display');
+            container.innerHTML = '';
+            const allPosts = JSON.parse(localStorage.getItem('jh_posts')) || [];
+            const filtered = activeCategory === '전체' 
+                ? allPosts.filter(p => p.genre !== '자료실') 
+                : allPosts.filter(p => p.genre === activeCategory);
+
+            if (activeCategory === '자료실') {
+                container.className = 'list-container';
+                filtered.forEach(p => {
+                    const item = document.createElement('div');
+                    item.className = 'list-item';
+                    item.innerHTML = `<span>📂 ${p.title}</span><span style="font-size:11px;color:#999">${p.author} | ${p.date}</span>`;
+                    item.onclick = () => showDetail(p.id);
+                    container.appendChild(item);
+                });
+            } else {
+                container.className = 'book-grid';
+                filtered.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'book-card';
+                    card.innerHTML = `<div class="book-thumb" style="background-image: url('${p.image || ''}'); background-color:#eee;">${p.image?'':'NO IMAGE'}</div><div class="book-info"><h4>${p.title}</h4><p>${p.genre} — ${p.author}</p></div>`;
+                    card.onclick = () => showDetail(p.id);
+                    container.appendChild(card);
+                });
+            }
+        }
+
+        function showDetail(id) {
+            selectedPostId = id;
+            const allPosts = JSON.parse(localStorage.getItem('jh_posts'));
+            const p = allPosts.find(item => item.id === id);
+            document.getElementById('detail-image').src = p.image || '';
+            document.getElementById('detail-image').style.display = p.image ? 'block' : 'none';
+            document.getElementById('detail-title').innerText = p.title;
+            document.getElementById('detail-meta').innerText = `${p.genre} / ${p.author} / ${p.date}`;
+            document.getElementById('detail-body').innerText = p.content;
+            document.getElementById('admin-tools').className = (currentUser.role === 'admin' || p.author === currentUser.id) ? '' : 'hidden';
+            toggleEditMode(false);
+            openModal('detail-modal');
+        }
+
+        function toggleEditMode(isEdit) {
+            document.getElementById('view-mode').className = isEdit ? 'hidden' : '';
+            document.getElementById('edit-mode').className = isEdit ? '' : 'hidden';
+            if(isEdit) {
+                const allPosts = JSON.parse(localStorage.getItem('jh_posts'));
+                const p = allPosts.find(item => item.id === selectedPostId);
+                document.getElementById('edit-title').value = p.title;
+                document.getElementById('edit-content').value = p.content;
+            }
+        }
+
+        function saveEdit() {
+            const title = document.getElementById('edit-title').value;
+            const content = document.getElementById('edit-content').value;
+            const fileInput = document.getElementById('edit-file');
+            let allPosts = JSON.parse(localStorage.getItem('jh_posts'));
+            const idx = allPosts.findIndex(p => p.id === selectedPostId);
+
+            const save = (img) => {
+                allPosts[idx].title = title;
+                allPosts[idx].content = content;
+                if(img) allPosts[idx].image = img;
+                localStorage.setItem('jh_posts', JSON.stringify(allPosts));
+                alert("수정되었습니다."); closeModal('detail-modal'); renderPosts();
+            };
+            if(fileInput.files[0]) {
+                const r = new FileReader(); r.onload = (e) => save(e.target.result); r.readAsDataURL(fileInput.files[0]);
+            } else save(null);
+        }
+
+        function handleRegister() {
+            const title = document.getElementById('reg-title').value;
+            const content = document.getElementById('reg-content').value;
+            const fileInput = document.getElementById('reg-file');
+            if(!title || !content) return alert("내용을 입력하세요.");
+            const save = (img) => {
+                const cp = JSON.parse(localStorage.getItem('jh_posts')) || [];
+                cp.unshift({ id: Date.now(), title, content, genre: activeCategory === '전체' ? '기타서적' : activeCategory, author: currentUser.id, date: new Date().toLocaleDateString(), image: img });
+                localStorage.setItem('jh_posts', JSON.stringify(cp));
+                renderPosts(); alert("등록되었습니다.");
+                document.getElementById('reg-title').value = ''; document.getElementById('reg-content').value = '';
+            };
+            if(fileInput.files[0]) {
+                const r = new FileReader(); r.onload = (e) => save(e.target.result); r.readAsDataURL(fileInput.files[0]);
+            } else save(null);
+        }
+
+        function deletePost() {
+            if(!confirm("삭제하시겠습니까?")) return;
+            let cp = JSON.parse(localStorage.getItem('jh_posts'));
+            cp = cp.filter(p => p.id !== selectedPostId);
+            localStorage.setItem('jh_posts', JSON.stringify(cp));
+            closeModal('detail-modal'); renderPosts();
+        }
+
+        function handleSignup() {
+            const id = document.getElementById('login-id').value;
+            const pw = document.getElementById('login-pw').value;
+            if(!id || !pw) return alert("아이디와 비번을 입력하세요.");
+            members.push({id, pw, date: new Date().toLocaleDateString()});
+            localStorage.setItem('jh_members', JSON.stringify(members));
+            alert("가입되었습니다.");
+        }
+
+        function refreshUserList() {
+            const list = document.getElementById('user-list-items');
+            list.innerHTML = members.map(m => `<tr><td>${m.id}</td><td style="text-align:right;"><button onclick=\"deleteUser('${m.id}')\">삭제</button></td></tr>`).join('');
+        }
+        function deleteUser(id) { members = members.filter(m => m.id !== id); localStorage.setItem('jh_members', JSON.stringify(members)); refreshUserList(); }
+        function checkEnter(e) { if(e.key === 'Enter') handleLogin(); }
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    </script>
+</body>
+</html>
